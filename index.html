@@ -56,12 +56,13 @@
 			void main() {
 				vec2 p = vUv;
 				p.x += dx;
-				if(texture2D(antTexture, p) != vec4(0,0,0,0)) {
+				if(texture2D(antTexture, p) != vec4(0,0,0,1)) {
 					gl_FragColor = vec4(1,1,1,1);
 				}
 				else {
 					gl_FragColor = vec4(0,0,0,1);
 				}
+				gl_FragColor += texture2D(antTexture, vUv);
 				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
 		</script>
@@ -318,8 +319,6 @@
 			 
 			    window.addEventListener( 'resize', onWindowResize, false );
 
-				// Init ants
-				renderer.render( randomScene, camera, ant, true);
 			 
 			    //render();
 
@@ -341,12 +340,19 @@
 				renderer.autoClear = false;
 				renderer.clear();
 
-				// Update ants
-				//ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
-				//renderer.render( antScene, camera, ant, true);
+				// Init ants
+				if(firstExecution == true) {
+					firstExecution = false;
+					renderer.render(randomScene, camera, ant, true);
+				}
 
-				//antUniforms.antTexture.value = ant;
-				//antMesh.material.needsUpdate = true;
+
+				// Update ants
+				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+				renderer.render( antScene, camera, ant, true);
+
+				antUniforms.antTexture.value = ant;
+				antMesh.material.needsUpdate = true;
 
 				finalUniforms.paintingTexture.value = ant;
 				finalMesh.material.needsUpdate = true;
