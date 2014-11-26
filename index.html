@@ -144,7 +144,7 @@
 				finalScene.add(camera);
 
 				// Create textures
-				painting = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {painting["loaded"] = true;});
+				painting = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				living = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {living["loaded"] = true;});
 				ant = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {ant["loaded"] = true;});
 
@@ -258,10 +258,7 @@
 			 
 
 			function animate() {
-				if(ant["loaded"] == true &&
-				   living["loaded"] == true &&
-				   painting["loaded"] == true)
-					render();
+				render();
 
 			    requestAnimationFrame( animate );
 			}
@@ -282,8 +279,7 @@
 
 
 				// Update painting
-				var fbo = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
-				renderer.render( paintingScene, camera, fbo, true);
+				renderer.render( paintingScene, camera, painting, true);
 
 
 				// Draw painting on the screen
