@@ -5,55 +5,91 @@
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
 		</style>
-		<script type="x-shader/x-vertex" id="vertexShader">
-			uniform float mRefractionRatio;
-			uniform float mFresnelBias;
-			uniform float mFresnelScale;
-			uniform float mFresnelPower;
-
-			varying vec3 vReflect;
-			varying vec3 vRefract[3];
-			varying float vReflectionFactor;
+		<script type="x-shader/x-vertex" id="antVertexShader">
+			varying vec2 vUv;
 
 			void main() {
+				vUv = uv;
 
-				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
-
-				vec3 worldNormal = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
-
-				vec3 I = worldPosition.xyz - cameraPosition;
-
-				vReflect = reflect( I, worldNormal );
-				vRefract[0] = refract( normalize( I ), worldNormal, mRefractionRatio );
-				vRefract[1] = refract( normalize( I ), worldNormal, mRefractionRatio * 0.99 );
-				vRefract[2] = refract( normalize( I ), worldNormal, mRefractionRatio * 0.98 );
-				vReflectionFactor = mFresnelBias + mFresnelScale * pow( 1.0 + dot( normalize( I ), worldNormal ), mFresnelPower );
-
-				gl_Position = projectionMatrix * mvPosition;
-
+				gl_Position = vec4(position,1.0);
 			}
-
 		</script>
 
-		<script type="x-shader/x-fragment" id="fragmentShader">
-			uniform samplerCube tCube;
+		<script type="x-shader/x-fragment" id="antFragmentShader">
+			uniform sampler2D antTexture;
 
-			varying vec3 vReflect;
-			varying vec3 vRefract[3];
-			varying float vReflectionFactor;
+			varying vec2 vUv;
 
 			void main() {
+				vec2 p = vUv;
+				gl_FragColor = texture2D(antTexture, p); // Displays Nothing
+				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
+			}
+		</script>
 
-				vec4 reflectedColor = textureCube( tCube, vec3( -vReflect.x, vReflect.yz ) );
-				vec4 refractedColor = vec4( 1.0 );
+		<script type="x-shader/x-vertex" id="livingVertexShader">
+			varying vec2 vUv;
 
-				refractedColor.r = textureCube( tCube, vec3( -vRefract[0].x, vRefract[0].yz ) ).r;
-				refractedColor.g = textureCube( tCube, vec3( -vRefract[1].x, vRefract[1].yz ) ).g;
-				refractedColor.b = textureCube( tCube, vec3( -vRefract[2].x, vRefract[2].yz ) ).b;
+			void main() {
+				vUv = uv;
 
-				gl_FragColor = mix( refractedColor, reflectedColor, clamp( vReflectionFactor, 0.0, 1.0 ) );
+				gl_Position = vec4(position,1.0);
+			}
+		</script>
 
+		<script type="x-shader/x-fragment" id="livingFragmentShader">
+			uniform sampler2D livingTexture;
+
+			varying vec2 vUv;
+
+			void main() {
+				vec2 p = vUv;
+				gl_FragColor = texture2D(livingTexture, p) + vec4(0.7, 0, 0, 0); // Displays Nothing
+				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
+			}
+		</script>
+
+		<script type="x-shader/x-vertex" id="paintingVertexShader">
+			varying vec2 vUv;
+
+			void main() {
+				vUv = uv;
+
+				gl_Position = vec4(position,1.0);
+			}
+		</script>
+
+		<script type="x-shader/x-fragment" id="paintingFragmentShader">
+			uniform sampler2D paintingTexture;
+
+			varying vec2 vUv;
+
+			void main() {
+				vec2 p = vUv;
+				gl_FragColor = texture2D(paintingTexture, p); // Displays Nothing
+				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
+			}
+		</script>
+
+		<script type="x-shader/x-vertex" id="finalVertexShader">
+			varying vec2 vUv;
+
+			void main() {
+				vUv = uv;
+
+				gl_Position = vec4(position,1.0);
+			}
+		</script>
+
+		<script type="x-shader/x-fragment" id="finalFragmentShader">
+			uniform sampler2D paintingTexture;
+
+			varying vec2 vUv;
+
+			void main() {
+				vec2 p = vUv;
+				gl_FragColor = texture2D(paintingTexture, p); // Displays Nothing
+				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
 		</script>
 	</head>
@@ -61,60 +97,153 @@
 		<script src="js/three.min.js"></script>
 		<script>
 			var camera;
-			var scene;
+
 			var renderer;
-			var mesh;
+
+			// Meshes
+			var paintingMesh;
+			var livingMesh;
+			var antMesh;
+			var finalMesh;
+
+			// Textures
+			var painting;
+			var living;
+			var ant;
+
+			// Scenes
+			var paintingScene;
+			var livingScene;
+			var antScene;
+			var finalScene;
+
+			// Uniforms
+			var paintingUniforms;
+			var livingUniforms;
+			var antUniforms;
+			var finalUniforms;
 			 
 			init();
 			animate();
-			 
+
 			function init() {
-			 
-			    scene = new THREE.Scene();
-			    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000);
-			 
-			    var light = new THREE.DirectionalLight( 0xffffff );
-			    light.position.set( 0, 1, 1 ).normalize();
-			    scene.add(light);
 
-				var geometry = new THREE.SphereGeometry( 10, 32, 16 );
-			    //var geometry = new THREE.BoxGeometry( 10, 10, 10);
-			    //var material = new THREE.MeshPhongMaterial( { ambient: 0x050505, color: 0x0033ff, specular: 0x555555, shininess: 30 } );
-			 	//var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('image/crate.jpg') } );
+				// Scenes
+				paintingScene = new THREE.Scene();
+				livingScene   = new THREE.Scene();
+				antScene      = new THREE.Scene();
+				finalScene    = new THREE.Scene();
 
-				var path = "image/skybox/";
-				var format = '.jpg';
-				var urls = [
-					path + 'posx' + format, path + 'negx' + format,
-					path + 'posy' + format, path + 'negy' + format,
-					path + 'posz' + format, path + 'negz' + format
-				];
+				// Use only this camera
+			    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+				camera.position.z = 1;
 
-				var textureCube = THREE.ImageUtils.loadTextureCube( urls);
-				textureCube.format = THREE.RGBFormat;
+				paintingScene.add(camera);
+				livingScene.add(camera);
+				antScene.add(camera);
+				finalScene.add(camera);
 
-				var material = new THREE.ShaderMaterial({
-					uniforms: {
+				// Create textures
+				painting = THREE.ImageUtils.loadTexture("image/sea.jpg");
+				living = THREE.ImageUtils.loadTexture("image/sea.jpg");
+				ant = THREE.ImageUtils.loadTexture("image/sea.jpg");
 
-						"mRefractionRatio": { type: "f", value: 1.02 },
-						"mFresnelBias": { type: "f", value: 0.1 },
-						"mFresnelPower": { type: "f", value: 2.0 },
-						"mFresnelScale": { type: "f", value: 1.0 },
-						//"tCube": { type: "t", value: null }
-						"tCube": {
-							type: "t",
-							value: textureCube
-						}
+				painting.onLoad = function() {console.log("prova");};
 
-					},
-					//attributes: /* */,
-					vertexShader: document.getElementById("vertexShader").textContent,
-					fragmentShader: document.getElementById("fragmentShader").textContent
+				var height = 2;
+				var width  = 2;
+
+				// Create uniforms
+				paintingUniforms = {
+					paintingTexture: { type: "t", value: painting }
+				};
+
+				livingUniforms = {
+					livingTexture: { type: "t", value: living }
+				};
+
+				antUniforms = {
+					antTexture: { type: "t", value: ant }
+				};
+
+				finalUniforms = {
+					paintingTexture: { type: "t", value: painting }
+				};
+
+				// Create Shaders
+				var livingVertexShader     = document.getElementById('livingVertexShader').innerHTML;
+				var livingFragmentShader   = document.getElementById('livingFragmentShader').innerHTML;
+
+				var paintingVertexShader   = document.getElementById('paintingVertexShader').innerHTML;
+				var paintingFragmentShader = document.getElementById('paintingFragmentShader').innerHTML;
+
+				var antVertexShader        = document.getElementById('antVertexShader').innerHTML;
+				var antFragmentShader      = document.getElementById('antFragmentShader').innerHTML;
+
+				var finalVertexShader        = document.getElementById('finalVertexShader').innerHTML;
+				var finalFragmentShader      = document.getElementById('finalFragmentShader').innerHTML;
+
+				var paintingMaterial = new THREE.ShaderMaterial({
+					uniforms: paintingUniforms,
+					vertexShader: paintingVertexShader,
+					fragmentShader: paintingFragmentShader
 				});
 
-			    mesh = new THREE.Mesh(geometry, material );
-			    mesh.position.z = -50;
-			    scene.add( mesh );
+				var livingMaterial = new THREE.ShaderMaterial({
+					uniforms: livingUniforms,
+					vertexShader: livingVertexShader,
+					fragmentShader: livingFragmentShader
+				});
+
+				var antMaterial = new THREE.ShaderMaterial({
+					uniforms: antUniforms,
+					vertexShader: antVertexShader,
+					fragmentShader: antFragmentShader
+				});
+
+				var finalMaterial = new THREE.ShaderMaterial({
+					uniforms: finalUniforms,
+					vertexShader: finalVertexShader,
+					fragmentShader: finalFragmentShader
+				});
+
+
+			    paintingMesh = new THREE.Mesh(
+						new THREE.PlaneGeometry(width, height, 0),
+						paintingMaterial
+				);
+
+				livingMesh = new THREE.Mesh(
+						new THREE.PlaneGeometry(width, height, 0),
+						livingMaterial
+				);
+
+				antMesh = new THREE.Mesh(
+						new THREE.PlaneGeometry(width, height, 0),
+						antMaterial
+				);
+
+				finalMesh = new THREE.Mesh(
+						new THREE.PlaneGeometry(width, height, 0),
+						finalMaterial
+				);
+
+				paintingMesh.material.depthTest = false;
+				paintingMesh.material.depthWrite = false;
+
+				livingMesh.material.depthTest = false;
+				livingMesh.material.depthWrite = false;
+
+				antMesh.material.depthTest = false;
+				antMesh.material.depthWrite = false;
+
+				finalMesh.material.depthTest = false;
+				finalMesh.material.depthWrite = false;
+
+				paintingScene.add(paintingMesh);
+				livingScene.add(livingMesh);
+				antScene.add(antMesh);
+				finalScene.add(finalMesh);
 			 
 			    renderer = new THREE.WebGLRenderer();
 			    renderer.setSize( window.innerWidth, window.innerHeight );
@@ -123,19 +252,35 @@
 			    window.addEventListener( 'resize', onWindowResize, false );
 			 
 			    render();
+
+				//requestAnimationFrame( animate );
 			}
 			 
 
 			function animate() {
-			    mesh.rotation.x += .04;
-			    mesh.rotation.y += .02;
 
-			    render();
+				render();
 			    requestAnimationFrame( animate );
 			}
 			 
 			function render() {
-			    renderer.render( scene, camera );
+				renderer.autoClear = false;
+				renderer.clear();
+
+				/*
+				// Update ants
+			    renderer.render( antScene, camera, ant, true);
+
+				// Update living
+				renderer.render( livingScene, camera, living, true);
+				*/
+
+				// Update painting
+				renderer.render( paintingScene, camera, painting, true);
+
+
+				// Draw painting on the screen
+				renderer.render( finalScene, camera);
 			}
 			 
 			function onWindowResize() {
