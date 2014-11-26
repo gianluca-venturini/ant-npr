@@ -7,10 +7,10 @@
 		</style>
 
 		<script type="x-shader/x-vertex" id="randomVertexShader">
-			//varying vec2 vUv;
+			varying vec2 vUv;
 
 			void main() {
-				//vUv = uv;
+				vUv = uv;
 
 				gl_Position = vec4(position,1.0);
 			}
@@ -18,10 +18,19 @@
 
 		<script type="x-shader/x-fragment" id="randomFragmentShader">
 
-			//varying vec2 vUv;
+			varying vec2 vUv;
+
+			float rand(vec2 co){
+				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+			}
 
 			void main() {
-				gl_FragColor = vec4(0.8, 0.1, 0.1, 1.0);
+				if(rand(vUv) < 0.01) {
+					gl_FragColor = vec4(1,1,1,1);
+				}
+				else {
+					gl_FragColor = vec4(0,0,0,1);
+				}
 				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
 		</script>
@@ -47,7 +56,7 @@
 			void main() {
 				vec2 p = vUv;
 				p.x += dx;
-				if(texture2D(antTexture, p) != vec3(0,0,0)) {
+				if(texture2D(antTexture, p) != vec4(0,0,0,0)) {
 					gl_FragColor = vec4(1,1,1,1);
 				}
 				else {
@@ -186,10 +195,6 @@
 				living   = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } ); // THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {living["loaded"] = true;});
 				ant 	 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } ); // THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {ant["loaded"] = true;});
 
-				var initLiving = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {
-					animate();
-				});
-
 				var height = 2;
 				var width  = 2;
 
@@ -319,6 +324,10 @@
 			    //render();
 
 				//requestAnimationFrame( animate );
+
+				var initLiving = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {
+					animate();
+				});
 			}
 			 
 
@@ -332,16 +341,12 @@
 				renderer.autoClear = false;
 				renderer.clear();
 
-				/*
-
 				// Update ants
-				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
-				renderer.render( antScene, camera, ant, true);
+				//ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+				//renderer.render( antScene, camera, ant, true);
 
-				antUniforms.material.paintingTexture.value = ant;
-				antUniforms.material.needsUpdate = true;
-
-				*/
+				//antUniforms.antTexture.value = ant;
+				//antMesh.material.needsUpdate = true;
 
 				finalUniforms.paintingTexture.value = ant;
 				finalMesh.material.needsUpdate = true;
