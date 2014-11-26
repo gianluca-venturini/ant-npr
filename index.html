@@ -66,7 +66,7 @@
 
 			void main() {
 				vec2 p = vUv;
-				gl_FragColor = texture2D(paintingTexture, p); // Displays Nothing
+				gl_FragColor = texture2D(paintingTexture, p) + vec4(0.5, 0, 0, 0); // Displays Nothing
 				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
 		</script>
@@ -274,12 +274,16 @@
 				// Update ants
 			    renderer.render( antScene, camera, ant, true);
 
+			    */
+
 				// Update living
-				renderer.render( livingScene, camera, living, true);
-				*/
+				//livingUniforms.livingTexture.value = livingUniforms.livingTexture.value.clone();
+				//renderer.render( livingScene, camera, living, true);
+
 
 				// Update painting
-				renderer.render( paintingScene, camera, painting, true);
+				var fbo = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+				renderer.render( paintingScene, camera, fbo, true);
 
 
 				// Draw painting on the screen
