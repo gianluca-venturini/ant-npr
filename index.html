@@ -144,11 +144,11 @@
 				finalScene.add(camera);
 
 				// Create textures
-				painting = THREE.ImageUtils.loadTexture("image/sea.jpg");
-				living = THREE.ImageUtils.loadTexture("image/sea.jpg");
-				ant = THREE.ImageUtils.loadTexture("image/sea.jpg");
+				painting = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {painting["loaded"] = true;});
+				living = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {living["loaded"] = true;});
+				ant = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {ant["loaded"] = true;});
 
-				painting.onLoad = function() {console.log("prova");};
+				//painting.onLoad = ;
 
 				var height = 2;
 				var width  = 2;
@@ -251,15 +251,18 @@
 			 
 			    window.addEventListener( 'resize', onWindowResize, false );
 			 
-			    render();
+			    //render();
 
 				//requestAnimationFrame( animate );
 			}
 			 
 
 			function animate() {
+				if(ant["loaded"] == true &&
+				   living["loaded"] == true &&
+				   painting["loaded"] == true)
+					render();
 
-				render();
 			    requestAnimationFrame( animate );
 			}
 			 
