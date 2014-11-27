@@ -29,9 +29,9 @@
 					gl_FragColor = vec4(1,1,1,1);
 				}
 				else {
-					gl_FragColor = vec4(0,0,0,1);
+					gl_FragColor = vec4(0,0,0,0);
 				}
-				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
+				//gl_FragColor = vec4(0, 0, 0, 0); // Works; Displays Flat Color
 			}
 		</script>
 
@@ -46,16 +46,31 @@
 		</script>
 
 		<script type="x-shader/x-fragment" id="antFragmentShader">
-			uniform sampler2D antCopyTexture;
+			uniform sampler2D antTexture;
+			uniform sampler2D livingTexture;
+			uniform vec2 sensoryVectors[5];
+			uniform float sensoryWeights[5];
 
 			uniform float dx;
 			uniform float dy;
 
 			varying vec2 vUv;
 
-			void main() {
-				vec2 p = vUv;
+			vec2 move(vec2 point) {
+				vec2 dp = vec2(0,0);
+				for(int i=0; i<5; i++) {
+					float wi = sensoryWeights[i];
+					vec2  sv = normalize(sensoryVectors[i]);
+					vec2 svn = vec2(sv.x * 5.0 * dx, sv.y * 5.0 * dy);
+					float luminance = texture2D(livingTexture, point+svn).x + texture2D(livingTexture, point+svn).y + texture2D(livingTexture, point+svn).z;
+					dp += 0.005 * (sv/length(sv)) * luminance * wi;	// Moltiply vel
+				}
+				return point+dp;
 
+			}
+
+			void main() {
+				/*
 				vec4 NW = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y - dy));
 				vec4 N  = texture2D(antCopyTexture, vec2(vUv.x     , vUv.y - dy));
 				vec4 NE = texture2D(antCopyTexture, vec2(vUv.x + dx, vUv.y - dy));
@@ -64,25 +79,45 @@
 				vec4 SW = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y + dy));
 				vec4 S  = texture2D(antCopyTexture, vec2(vUv.x     , vUv.y + dy));
 				vec4 SE = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y + dy));
+				*/
 
-				if(NW.x == vUv.x && NW.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else if(N.x == vUv.x && N.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else if(NE.x == vUv.x && NE.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else if(W.x == vUv.x && W.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else if(E.x == vUv.x && E.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else if(SW.x == vUv.x && SW.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else if(S.x == vUv.x && S.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else if(SE.x == vUv.x && SE.y == vUv.y)
-					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
-				else
-					gl_FragColor += vec4(1.0, 0.0, 0.0, 1.0);
+				vec4 ant = vec4(0.0, 0.0, 0.0, 0.0);
+				int found = 0;
+				int flag = 0;
+				for(int i = 0; i < 5; i++)
+					for(int j = 0; j < 5; j++) {
+						if(j != 2 && i != 2) {
+							vec2 p = vUv;
+							p.x += (float(i)-2.0) * dx;
+							p.y += (float(j)-2.0) * dy;
+							vec4 a = texture2D(antTexture, p);
+
+							if(a.x != 0.0 && a.y != 0.0 && a.z != 0.0 && a.w != 0.0) {
+								vec2 newP = move(p);
+								flag = 1;
+
+								if(abs(newP.x - vUv.x) <= dx && abs(newP.y - vUv.y) <= dy) {
+									ant = texture2D(antTexture, p);
+									found = 1;
+								}
+							}
+						}
+					}
+				/*
+				if(found == 1) {
+					gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+				} else {
+					gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+				}
+				*/
+				if(flag == 1) {
+					gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+				} else {
+					gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+				}
+
+
+
 				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
 		</script>
@@ -227,6 +262,29 @@
 			var antCopyUniforms;
 			var antUniforms;
 			var finalUniforms;
+
+			// Parameters
+			var gain;
+			var decay;
+			var consRate;
+			var depositRate;
+			var depositTransp;
+			var dTranspMax;
+			var dTranspMin;
+			var initialEnergy;
+			var deathTreshold;
+			var descVelMin;
+			var descVelMax;
+			var vel;
+			var noiseMin;
+			var noiseMax;
+			var initialPositions;
+			var sensoryVectors = [new THREE.Vector2( 0.1,  0.0 ),
+								  new THREE.Vector2( 0.1,  0.1 ),
+								  new THREE.Vector2( 0.1,  0.2 ),
+								  new THREE.Vector2( 0.1, -0.1 ),
+								  new THREE.Vector2( 0.1, -0.2 )];
+			var sensoryWeights = [0.1, 0.25, 0.25, 0.2, 0.2];
 			 
 			init();
 			//animate();
@@ -281,9 +339,14 @@
 				};
 
 				antUniforms = {
-					antCopyTexture: { type: "t", value: ant },
+					antTexture: { type: "t", value: ant },
+					livingTexture: { type: "t", value: living },
 					dx: { type: "f", value: 1/window.innerWidth},
 					dy: { type: "f", value: 1/window.innerHeight},
+					gain: {type: "f", value: gain},
+					decay: {type: "f", value: decay},
+					sensoryVectors: {type: "v2v", value: sensoryVectors},
+					sensoryWeights: {type: "fv1", value: sensoryWeights},
 				};
 
 				finalUniforms = {
@@ -411,7 +474,8 @@
 
 				//requestAnimationFrame( animate );
 
-				var initLiving = THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {
+				var initLiving = THREE.ImageUtils.loadTexture("image/girl.jpg", {}, function() {
+					antUniforms.livingTexture.value = initLiving;
 					animate();
 				});
 			}
@@ -434,13 +498,15 @@
 				}
 
 				// Update ants
+				/*
 				antCopyUniforms.antTexture.value = ant;
 				antCopyMesh.material.needsUpdate = true;
 
 				antCopy = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				renderer.render( antCopyScene, camera, antCopy, true);
+				*/
 
-				antUniforms.antCopyTexture.value = antCopy;
+				antUniforms.antTexture.value = ant;
 				antMesh.material.needsUpdate = true;
 
 				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
