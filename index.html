@@ -25,8 +25,8 @@
 			}
 
 			void main() {
-				if(rand(vUv) < 0.001) {
-					gl_FragColor = vec4(1,1,1,1);
+				if(rand(vUv) < 0.01) {
+					gl_FragColor = vec4(1,0,1,1);
 				}
 				else {
 					gl_FragColor = vec4(0,0,0,0);
@@ -56,16 +56,36 @@
 
 			varying vec2 vUv;
 
+			vec2 rotate(vec2 v, float angle) {
+				mat3 rotation = mat3(
+										cos(angle), -sin(angle), 0.0,
+										sin(angle),  cos(angle), 0.0,
+										0.0		  , 0.0		   , 1.0
+									);
+				return (rotation * vec3(v, 0.0)).xy;
+
+			}
+
 			vec2 move(vec2 point) {
 				vec2 dp = vec2(0,0);
 				for(int i=0; i<5; i++) {
 					float wi = sensoryWeights[i];
-					vec2  sv = normalize(sensoryVectors[i]);
+
+					vec2 dir = vec2(texture2D(antTexture, point).x - 0.5, texture2D(antTexture, point).y - 0.5);
+
+					float angle = acos(dot(vec2(1.0, 0.0), dir) / length(dir));
+
+					vec2  sv = normalize(rotate(sensoryVectors[i], angle));
+
 					vec2 svn = vec2(sv.x * 5.0 * dx, sv.y * 5.0 * dy);
 					float luminance = texture2D(livingTexture, point+svn).x + texture2D(livingTexture, point+svn).y + texture2D(livingTexture, point+svn).z;
-					dp += 0.005 * (sv/length(sv)) * luminance * wi;	// Moltiply vel
+					dp += 0.003 * (sv/length(sv)) * luminance * wi;	// Multiply vel
 				}
-				return point+dp;
+
+				// Clamping
+				dp = vec2( clamp(dp.x, -dx * 2.0, dx * 2.0), clamp(dp.y * 2.0, -dy * 2.0, dy * 2.0) );
+
+				return dp;
 
 			}
 
@@ -81,42 +101,31 @@
 				vec4 SE = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y + dy));
 				*/
 
+				gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+
 				vec4 ant = vec4(0.0, 0.0, 0.0, 0.0);
-				int found = 0;
-				int flag = 0;
-				for(int i = 0; i < 5; i++)
-					for(int j = 0; j < 5; j++) {
-						if(j != 2 || i != 2) {
+
+				for(int i = 0; i < 7; i++)
+					for(int j = 0; j < 7; j++) {
+						if(j != 3 || i != 3) {
 							vec2 p = vUv;
-							p.x += (float(i)-2.0) * dx;
-							p.y += (float(j)-2.0) * dy;
+							p.x += (float(i)-3.0) * dx;
+							p.y += (float(j)-3.0) * dy;
 							vec4 a = texture2D(antTexture, p);
 
-							if(a.x != 0.0 && a.y != 0.0 && a.z != 0.0 && a.w != 0.0) {
-								vec2 newP = move(p);
-								flag = 1;
+							if(a.z != 0.0 && p.x >= 0.0 && p.x <= 1.0 && p.y >= 0.0 && p.y <= 1.0) {
+								vec2 dir  = move(p);
+								vec2 newP = dir + p;
 
-								if(abs(newP.x - vUv.x) <= dx && abs(newP.y - vUv.y) <= dy) {
+								if(abs(newP.x - vUv.x) < dx/2.0 && abs(newP.y - vUv.y) < dy/2.0) {
 									ant = texture2D(antTexture, p);
-									found = 1;
+
+									vec2 d = normalize(dir) / 2.0;
+									gl_FragColor = vec4(d.x + 0.5, d.y + 0.5, 1.0, 1.0);
 								}
 							}
 						}
 					}
-				/*
-				if(found == 1) {
-					gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-				} else {
-					gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-				}
-				*/
-				if(flag == 1) {
-					gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-				} else {
-					gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-				}
-
-
 
 				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
@@ -280,11 +289,11 @@
 			var noiseMax;
 			var initialPositions;
 			var sensoryVectors = [new THREE.Vector2( 0.1,  0.0 ),
-								  new THREE.Vector2( 0.1,  0.1 ),
-								  new THREE.Vector2( 0.1,  0.2 ),
-								  new THREE.Vector2( 0.1, -0.1 ),
-								  new THREE.Vector2( 0.1, -0.2 )];
-			var sensoryWeights = [0.1, 0.25, 0.25, 0.2, 0.2];
+								  new THREE.Vector2( 0.1,  0.4 ),
+								  new THREE.Vector2( 0.1,  0.8 ),
+								  new THREE.Vector2( 0.1, -0.4 ),
+								  new THREE.Vector2( 0.1, -0.8 )];
+			var sensoryWeights = [0.1, 0.25, 0.2, 0.25, 0.2];
 			 
 			init();
 			//animate();
