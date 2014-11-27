@@ -25,7 +25,7 @@
 			}
 
 			void main() {
-				if(rand(vUv) < 0.01) {
+				if(rand(vUv) < 0.001) {
 					gl_FragColor = vec4(1,1,1,1);
 				}
 				else {
@@ -46,23 +46,78 @@
 		</script>
 
 		<script type="x-shader/x-fragment" id="antFragmentShader">
-			uniform sampler2D antTexture;
-			uniform sampler2D livingTexture;
+			uniform sampler2D antCopyTexture;
 
 			uniform float dx;
+			uniform float dy;
 
 			varying vec2 vUv;
 
 			void main() {
 				vec2 p = vUv;
-				p.x += dx;
-				if(texture2D(antTexture, p) != vec4(0,0,0,1)) {
-					gl_FragColor = vec4(1,1,1,1);
+
+				vec4 NW = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y - dy));
+				vec4 N  = texture2D(antCopyTexture, vec2(vUv.x     , vUv.y - dy));
+				vec4 NE = texture2D(antCopyTexture, vec2(vUv.x + dx, vUv.y - dy));
+				vec4 E  = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y     ));
+				vec4 W  = texture2D(antCopyTexture, vec2(vUv.x + dx, vUv.y     ));
+				vec4 SW = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y + dy));
+				vec4 S  = texture2D(antCopyTexture, vec2(vUv.x     , vUv.y + dy));
+				vec4 SE = texture2D(antCopyTexture, vec2(vUv.x - dx, vUv.y + dy));
+
+				if(NW.x == vUv.x && NW.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else if(N.x == vUv.x && N.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else if(NE.x == vUv.x && NE.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else if(W.x == vUv.x && W.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else if(E.x == vUv.x && E.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else if(SW.x == vUv.x && SW.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else if(S.x == vUv.x && S.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else if(SE.x == vUv.x && SE.y == vUv.y)
+					gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+				else
+					gl_FragColor += vec4(1.0, 0.0, 0.0, 1.0);
+				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
+			}
+		</script>
+
+		<script type="x-shader/x-vertex" id="antCopyVertexShader">
+			varying vec2 vUv;
+
+			void main() {
+				vUv = uv;
+
+				gl_Position = vec4(position,1.0);
+			}
+		</script>
+
+		<script type="x-shader/x-fragment" id="antCopyFragmentShader">
+			uniform sampler2D antTexture;
+			uniform sampler2D livingTexture;
+
+			uniform float dx;
+			uniform float dy;
+
+			varying vec2 vUv;
+
+			void main() {
+				vec2 p = vUv;
+
+				if(texture2D(antTexture, p).z != 0.0) {
+					gl_FragColor.x = p.x + dx;
+					gl_FragColor.y = p.y;
+
+					gl_FragColor.z = texture2D(antTexture, p).z;
+					gl_FragColor.w = texture2D(antTexture, p).w;
 				}
-				else {
-					gl_FragColor = vec4(0,0,0,1);
-				}
-				gl_FragColor += texture2D(antTexture, vUv);
+				else
+					gl_FragColor = vec4(0, 0, 0, 0);
 				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
 		</script>
@@ -145,11 +200,13 @@
 			var paintingMesh;
 			var livingMesh;
 			var antMesh;
+			var antCopyMesh;
 			var finalMesh;
 
 			// Textures
 			var painting;
 			var living;
+			var antCopy;
 			var ant;
 
 			// First execution
@@ -159,6 +216,7 @@
 			var randomScene;
 			var paintingScene;
 			var livingScene;
+			var antCopyScene;
 			var antScene;
 			var finalScene;
 
@@ -166,6 +224,7 @@
 			var randomUniforms;
 			var paintingUniforms;
 			var livingUniforms;
+			var antCopyUniforms;
 			var antUniforms;
 			var finalUniforms;
 			 
@@ -178,6 +237,7 @@
 				randomScene   = new THREE.Scene();
 				paintingScene = new THREE.Scene();
 				livingScene   = new THREE.Scene();
+				antCopyScene  = new THREE.Scene();
 				antScene      = new THREE.Scene();
 				finalScene    = new THREE.Scene();
 
@@ -188,12 +248,14 @@
 				randomScene.add(camera);
 				paintingScene.add(camera);
 				livingScene.add(camera);
+				antCopyScene.add(camera);
 				antScene.add(camera);
 				finalScene.add(camera);
 
 				// Create textures
 				painting = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				living   = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } ); // THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {living["loaded"] = true;});
+				antCopy	 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } ); // THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {ant["loaded"] = true;});
 				ant 	 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } ); // THREE.ImageUtils.loadTexture("image/sea.jpg", {}, function() {ant["loaded"] = true;});
 
 				var height = 2;
@@ -211,10 +273,17 @@
 					livingTexture: { type: "t", value: initLiving }
 				};
 
-				antUniforms = {
-					antTexture: { type: "t", value: ant },
+				antCopyUniforms = {
+					antTexture: { type: "t", value: antCopy },
 					livingTexture: { type: "t", value: living },
-					dx: { type: "f", value: 1/window.innerWidth}
+					dx: { type: "f", value: 1/window.innerWidth},
+					dy: { type: "f", value: 1/window.innerHeight},
+				};
+
+				antUniforms = {
+					antCopyTexture: { type: "t", value: ant },
+					dx: { type: "f", value: 1/window.innerWidth},
+					dy: { type: "f", value: 1/window.innerHeight},
 				};
 
 				finalUniforms = {
@@ -231,11 +300,14 @@
 				var paintingVertexShader   = document.getElementById('paintingVertexShader').innerHTML;
 				var paintingFragmentShader = document.getElementById('paintingFragmentShader').innerHTML;
 
+				var antCopyVertexShader    = document.getElementById('antCopyVertexShader').innerHTML;
+				var antCopyFragmentShader  = document.getElementById('antCopyFragmentShader').innerHTML;
+
 				var antVertexShader        = document.getElementById('antVertexShader').innerHTML;
 				var antFragmentShader      = document.getElementById('antFragmentShader').innerHTML;
 
-				var finalVertexShader        = document.getElementById('finalVertexShader').innerHTML;
-				var finalFragmentShader      = document.getElementById('finalFragmentShader').innerHTML;
+				var finalVertexShader      = document.getElementById('finalVertexShader').innerHTML;
+				var finalFragmentShader    = document.getElementById('finalFragmentShader').innerHTML;
 
 				var randomMaterial = new THREE.ShaderMaterial({
 					uniforms: randomUniforms,
@@ -253,6 +325,12 @@
 					uniforms: livingUniforms,
 					vertexShader: livingVertexShader,
 					fragmentShader: livingFragmentShader
+				});
+
+				var antCopyMaterial = new THREE.ShaderMaterial({
+					uniforms: antCopyUniforms,
+					vertexShader: antCopyVertexShader,
+					fragmentShader: antCopyFragmentShader
 				});
 
 				var antMaterial = new THREE.ShaderMaterial({
@@ -282,6 +360,11 @@
 						livingMaterial
 				);
 
+				antCopyMesh = new THREE.Mesh(
+						new THREE.PlaneGeometry(width, height, 0),
+						antCopyMaterial
+				);
+
 				antMesh = new THREE.Mesh(
 						new THREE.PlaneGeometry(width, height, 0),
 						antMaterial
@@ -304,6 +387,9 @@
 				antMesh.material.depthTest = false;
 				antMesh.material.depthWrite = false;
 
+				antCopyMesh.material.depthTest = false;
+				antCopyMesh.material.depthWrite = false;
+
 				finalMesh.material.depthTest = false;
 				finalMesh.material.depthWrite = false;
 
@@ -311,6 +397,7 @@
 				paintingScene.add(paintingMesh);
 				livingScene.add(livingMesh);
 				antScene.add(antMesh);
+				antCopyScene.add(antCopyMesh);
 				finalScene.add(finalMesh);
 			 
 			    renderer = new THREE.WebGLRenderer();
@@ -346,13 +433,18 @@
 					renderer.render(randomScene, camera, ant, true);
 				}
 
-
 				// Update ants
+				antCopyUniforms.antTexture.value = ant;
+				antCopyMesh.material.needsUpdate = true;
+
+				antCopy = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+				renderer.render( antCopyScene, camera, antCopy, true);
+
+				antUniforms.antCopyTexture.value = antCopy;
+				antMesh.material.needsUpdate = true;
+
 				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				renderer.render( antScene, camera, ant, true);
-
-				antUniforms.antTexture.value = ant;
-				antMesh.material.needsUpdate = true;
 
 				finalUniforms.paintingTexture.value = ant;
 				finalMesh.material.needsUpdate = true;
