@@ -77,6 +77,11 @@
 
 			uniform float vel;
 
+			uniform float noiseMin;
+			uniform float noiseMax;
+
+			uniform float deathTreshold;
+
 			varying vec2 vUv;
 
 			vec4 mod289(vec4 x)
@@ -196,7 +201,7 @@ float pnoise(vec2 P, vec2 rep)
 
 					vec2 dir = vec2(texture2D(antTexture, point).x - 0.5, texture2D(antTexture, point).y - 0.5);
 
-					float angle = acos(dot(vec2(1.0, 0.0), dir) / length(dir));
+					float angle = acos(dot(dir, vec2(1.0, 0.0)) / length(dir));
 
 					//vec2 sv = rotate(normalize(sensoryVectors[i]), angle);
 					vec2 sv = rotate(sensoryVectors[i], angle);
@@ -208,11 +213,11 @@ float pnoise(vec2 P, vec2 rep)
 
 				// Adding perlin noise
 				float noise = cnoise(dp);
-				//dp.x += noise * dx;
-				//dp.y += noise * dy;
+				dp.x += (noiseMin + (noiseMax-noiseMin)/2.0 * (1.0 + noise)) * dx;
+				dp.y += (noiseMin + (noiseMax-noiseMin)/2.0 * (1.0 + noise)) * dy;
 
 				// Clamping
-				dp = vec2( clamp(dp.x, -dx * 5.5, dx * 5.5), clamp(dp.y, -dy * 5.5, dy * 5.5) );
+				dp = vec2( clamp(dp.x, -dx * 5.0, dx * 5.0), clamp(dp.y, -dy * 5.0, dy * 5.0) );
 
 				return dp;
 
@@ -259,9 +264,12 @@ float pnoise(vec2 P, vec2 rep)
 
 									if(previousEnergy > offspringTreshold)
 										previousEnergy -= offspringTreshold;
-									float energy = (ant.z + luminance * gain) * decay;
+									float energy = (previousEnergy + luminance * gain) * decay;
 
 									gl_FragColor = vec4(d.x + 0.5, d.y + 0.5, energy, 1.0);
+
+									if(gl_FragColor.z < deathTreshold)
+										gl_FragColor.z = 0.0;
 								}
 							}
 						}
@@ -451,35 +459,35 @@ float pnoise(vec2 P, vec2 rep)
 
 			// Parameters
 			var parameters = {
-				gain: 0.8,
-				decay: 0.8,
+				gain: 0.7,
+				decay: 0.9,
 				consRate: undefined,
 				depositRate: undefined,
 				depositTransp: undefined,
 				dTranspMax: undefined,
 				dTranspMin: undefined,
-				initialEnergy: 1,
-				deathTreshold: undefined,
-				offspringTreshold: 1,
-				descVelMin: -1,
-				descVelMax: 1,
+				initialEnergy: 1.0,
+				deathTreshold: 0.3,
+				offspringTreshold: 0.999999,
+				descVelMin: -1.0,
+				descVelMax: 1.0,
 				vel: 0.002,
-				noiseMin: undefined,
-				noiseMax: undefined,
+				noiseMin: -3.0,
+				noiseMax: 3.0,
 				initialPositions: undefined,
 			};
 
-			var sensoryVectors = [new THREE.Vector2( 1.0,   0.0 ),
-								  new THREE.Vector2( 1.0,   1.0 ),
-								  new THREE.Vector2( 1.0,   2.0 ),
-								  new THREE.Vector2( 1.0,   3.0 ),
-								  new THREE.Vector2( 0.0,   2.0 ),
-				    		      new THREE.Vector2( 1.0,  -1.0 ),
-								  new THREE.Vector2( 1.0,  -2.0 ),
-								  new THREE.Vector2( 1.0,  -3.0 ),
-								  new THREE.Vector2( 0.0,  -2.0 )
+			var sensoryVectors = [new THREE.Vector2( 5.0,   0.0 ),
+								  new THREE.Vector2( 7.0,   3.0 ),
+								  new THREE.Vector2( 8.0,   6.0 ),
+								  new THREE.Vector2( 4.0,   6.0 ),
+								  new THREE.Vector2( 3.0,   9.0 ),
+								  new THREE.Vector2( 7.0,  -3.0 ),
+								  new THREE.Vector2( 8.0,  -6.0 ),
+								  new THREE.Vector2( 4.0,  -6.0 ),
+								  new THREE.Vector2( 3.0,  -9.0 ),
 			];
-			var sensoryWeights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8];
+			var sensoryWeights = [0.1, 0.4, 0.3, 0.2, 1.9, 0.4, 0.3, 0.2, 1.9];
 			 
 			init();
 			//animate();
@@ -551,6 +559,9 @@ float pnoise(vec2 P, vec2 rep)
 					descVelMax: {type: "f", value: parameters.descVelMax},
 					offspringTreshold: {type: "f", value: parameters.offspringTreshold},
 					vel: {type: "f", value: parameters.vel},
+					noiseMin: {type: "f", value: parameters.noiseMin},
+					noiseMax: {type: "f", value: parameters.noiseMax},
+					deathTreshold: {type: "f", value: parameters.deathTreshold},
 				};
 
 				finalUniforms = {
