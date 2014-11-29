@@ -454,7 +454,7 @@ float pnoise(vec2 P, vec2 rep)
 		<script>
 			var camera;
 
-			var renderer;
+			var renderer = undefined;
 
 			// Meshes
 			var randomMesh;
@@ -469,6 +469,8 @@ float pnoise(vec2 P, vec2 rep)
 			var living;
 			var antCopy;
 			var ant;
+
+			var initLiving;
 
 			// First execution
 			var firstExecution = true;
@@ -711,23 +713,35 @@ float pnoise(vec2 P, vec2 rep)
 				antScene.add(antMesh);
 				antCopyScene.add(antCopyMesh);
 				finalScene.add(finalMesh);
-			 
-			    renderer = new THREE.WebGLRenderer();
-			    renderer.setSize( window.innerWidth, window.innerHeight );
-			    document.body.appendChild( renderer.domElement );
-			 
-			    window.addEventListener( 'resize', onWindowResize, false );
 
-			 
 			    //render();
 
 				//requestAnimationFrame( animate );
 
-				var initLiving = THREE.ImageUtils.loadTexture("image/girl.jpg", {}, function() {
+				if(firstExecution == true) {
+					renderer = new THREE.WebGLRenderer();
+					renderer.setSize( window.innerWidth, window.innerHeight );
+					renderer.domElement.id = "canvas";
+					document.body.appendChild( renderer.domElement );
+
+
+					window.addEventListener( 'resize', onWindowResize, false );
+
+					initLiving = THREE.ImageUtils.loadTexture("image/girl.jpg", {}, function () {
+						antUniforms.livingTexture.value = initLiving;
+						livingUniforms.livingTexture.value = initLiving;
+						animate();
+					});
+				}
+				else {
 					antUniforms.livingTexture.value = initLiving;
 					livingUniforms.livingTexture.value = initLiving;
-					animate();
-				});
+
+					antMesh.material.needsUpdate = true;
+					livingMesh.material.needsUpdate = true;
+
+					firstExecution = true;
+				}
 			}
 			 
 
