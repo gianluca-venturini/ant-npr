@@ -1,0 +1,43 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    color: rgba(246,246,246,1);
+}
+
+ul li {
+    list-style: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+h1 {
+    font-weight: 300;
+}
+
+.menu input {
+    float: right;
+    outline: none;
+}
+
+hr {
+    margin-top: 3px;
+    border: 0;
+    height: 1px;
+    background: #aaaaaa;
+    background-image: -webkit-linear-gradient(left, #222, #aaaaaa, #222);
+    background-image:    -moz-linear-gradient(left, #222, #aaaaaa, #222);
+    background-image:     -ms-linear-gradient(left, #222, #aaaaaa, #222);
+    background-image:      -o-linear-gradient(left, #222, #aaaaaa, #222);
+}
+
+.menu {
+    position: fixed;
+    background-color: rgba(46,36,33, 0.7);
+    height: 100%;
+    width: 300px;
+    padding: 20px;
+}

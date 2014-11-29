@@ -1,5 +1,15 @@
 <html>
 	<head>
+    <meta charset="UTF-8">
+		<title>My first Three.js app</title>
+        <!-- FONTS -->
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,600,700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="style/style.css"/>
+
+        <script src="js/d3.js"></script>
+        <script src="js/jquery.js"></script>
+        <script src="js/UI.js"></script>
+
 		<title>Ant genetic algorithm</title>
 		<style>
 			body { margin: 0; }
@@ -418,6 +428,28 @@ float pnoise(vec2 P, vec2 rep)
 		</script>
 	</head>
 	<body>
+
+
+
+        <div class="menu">
+            <h1>Specie setup</h1>
+            <ul class="parameters">
+                <!--<li>-->
+                    <!--<label for="gain">Gain</label>-->
+                    <!--<input id="gain" type="text" name="gain">-->
+                    <!--<hr/>-->
+                <!--</li>-->
+            </ul>
+        </div>
+
+
+
+
+
+
+
+
+
 		<script src="js/three.min.js"></script>
 		<script>
 			var camera;
@@ -476,6 +508,8 @@ float pnoise(vec2 P, vec2 rep)
 				noiseMax: 3.0,
 				initialPositions: undefined,
 			};
+
+            startUI();
 
 			var sensoryVectors = [new THREE.Vector2( 5.0,   0.0 ),
 								  new THREE.Vector2( 7.0,   3.0 ),
