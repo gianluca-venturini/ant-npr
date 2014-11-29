@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>My first Three.js app</title>
+		<title>Ant genetic algorithm</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
@@ -198,9 +198,10 @@ float pnoise(vec2 P, vec2 rep)
 
 					float angle = acos(dot(vec2(1.0, 0.0), dir) / length(dir));
 
-					vec2 sv = rotate(normalize(sensoryVectors[i]), angle);
+					//vec2 sv = rotate(normalize(sensoryVectors[i]), angle);
+					vec2 sv = rotate(sensoryVectors[i], angle);
 
-					vec2 svn = vec2(sv.x * 3.0 * dx, sv.y * 3.0 * dy);
+					vec2 svn = vec2(sv.x * dx, sv.y * dy);
 					float luminance = texture2D(livingTexture, point+svn).x + texture2D(livingTexture, point+svn).y + texture2D(livingTexture, point+svn).z;
 					dp += vel * (sv/length(sv)) * luminance * wi;	// Multiply vel
 				}
@@ -365,12 +366,23 @@ float pnoise(vec2 P, vec2 rep)
 
 		<script type="x-shader/x-fragment" id="paintingFragmentShader">
 			uniform sampler2D paintingTexture;
+			uniform sampler2D antTexture;
 
 			varying vec2 vUv;
 
 			void main() {
 				vec2 p = vUv;
-				gl_FragColor = texture2D(paintingTexture, p) + vec4(0.5, 0, 0, 0); // Displays Nothing
+
+				gl_FragColor = texture2D(paintingTexture, vUv);
+				gl_FragColor.w = 1.0;
+
+				vec4 ant =  texture2D(antTexture, vUv);
+
+				if(ant.x > 0.0) {
+					gl_FragColor.x += 1.0;
+					gl_FragColor.y += 1.0;
+					gl_FragColor.z += 1.0;
+				}
 				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 			}
 		</script>
@@ -438,33 +450,36 @@ float pnoise(vec2 P, vec2 rep)
 			var finalUniforms;
 
 			// Parameters
-			var gain = 0.8;
-			var decay = 0.8;
-			var consRate;
-			var depositRate;
-			var depositTransp;
-			var dTranspMax;
-			var dTranspMin;
-			var initialEnergy = 1;
-			var deathTreshold;
-			var offspringTreshold = 1;
-			var descVelMin = -1;
-			var descVelMax =  1;
-			var vel = 0.002;
-			var noiseMin;
-			var noiseMax;
-			var initialPositions;
-			var sensoryVectors = [new THREE.Vector2( 1.0,  0.0 ),
-								  new THREE.Vector2( 1.0,  1.0 ),
-								  new THREE.Vector2( 1.0,  4.0 ),
-								  new THREE.Vector2( 1.0,  10.0 ),
-								  new THREE.Vector2( 1.0,  100.0 ),
-				    		      new THREE.Vector2( 1.0,  -5.0 ),
-								  new THREE.Vector2( 1.0,  -7.0 ),
-								  new THREE.Vector2( 1.0,  -10.0 ),
-								  new THREE.Vector2( 1.0,  -100.0 )
+			var parameters = {
+				gain: 0.8,
+				decay: 0.8,
+				consRate: undefined,
+				depositRate: undefined,
+				depositTransp: undefined,
+				dTranspMax: undefined,
+				dTranspMin: undefined,
+				initialEnergy: 1,
+				deathTreshold: undefined,
+				offspringTreshold: 1,
+				descVelMin: -1,
+				descVelMax: 1,
+				vel: 0.002,
+				noiseMin: undefined,
+				noiseMax: undefined,
+				initialPositions: undefined,
+			};
+
+			var sensoryVectors = [new THREE.Vector2( 1.0,   0.0 ),
+								  new THREE.Vector2( 1.0,   1.0 ),
+								  new THREE.Vector2( 1.0,   2.0 ),
+								  new THREE.Vector2( 1.0,   3.0 ),
+								  new THREE.Vector2( 0.0,   2.0 ),
+				    		      new THREE.Vector2( 1.0,  -1.0 ),
+								  new THREE.Vector2( 1.0,  -2.0 ),
+								  new THREE.Vector2( 1.0,  -3.0 ),
+								  new THREE.Vector2( 0.0,  -2.0 )
 			];
-			var sensoryWeights = [0.0, 0.3, 0.6, 0.4, 0.4, 0.2, 0.3, 0.4, 0.4];
+			var sensoryWeights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8];
 			 
 			init();
 			//animate();
@@ -501,11 +516,12 @@ float pnoise(vec2 P, vec2 rep)
 
 				// Create uniforms
 				randomUniforms = {
-						initialEnergy: { type: "f", value: initialEnergy}
+						initialEnergy: { type: "f", value: parameters.initialEnergy}
 				};
 
 				paintingUniforms = {
-					paintingTexture: { type: "t", value: painting }
+					paintingTexture: { type: "t", value: painting },
+					antTexture: { type: "t", value: ant },
 				};
 
 				livingUniforms = {
@@ -527,14 +543,14 @@ float pnoise(vec2 P, vec2 rep)
 					livingTexture: { type: "t", value: living },
 					dx: { type: "f", value: 1/window.innerWidth},
 					dy: { type: "f", value: 1/window.innerHeight},
-					gain: {type: "f", value: gain},
-					decay: {type: "f", value: decay},
+					gain: {type: "f", value: parameters.gain},
+					decay: {type: "f", value: parameters.decay},
 					sensoryVectors: {type: "v2v", value: sensoryVectors},
 					sensoryWeights: {type: "fv1", value: sensoryWeights},
-					descVelMin: {type: "f", value: descVelMin},
-					descVelMax: {type: "f", value: descVelMax},
-					offspringTreshold: {type: "f", value: offspringTreshold},
-					vel: {type: "f", value: vel},
+					descVelMin: {type: "f", value: parameters.descVelMin},
+					descVelMax: {type: "f", value: parameters.descVelMax},
+					offspringTreshold: {type: "f", value: parameters.offspringTreshold},
+					vel: {type: "f", value: parameters.vel},
 				};
 
 				finalUniforms = {
@@ -701,9 +717,6 @@ float pnoise(vec2 P, vec2 rep)
 				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				renderer.render( antScene, camera, ant, true);
 
-				finalUniforms.paintingTexture.value = living;
-				finalMesh.material.needsUpdate = true;
-
 
 				// Update living
 
@@ -719,10 +732,17 @@ float pnoise(vec2 P, vec2 rep)
 				antUniforms.livingTexture.value = living;
 				antMesh.material.needsUpdate = true;
 
-				/*
+
 				// Update painting
+				paintingUniforms.paintingTexture.value = painting;
+				paintingUniforms.antTexture.value = ant;
+				paintingMesh.material.needsUpdate = true;
+
+				painting = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				renderer.render( paintingScene, camera, painting, true);
-				*/
+
+				finalUniforms.paintingTexture.value = living;
+				finalMesh.material.needsUpdate = true;
 
 
 				// Draw painting on the screen
