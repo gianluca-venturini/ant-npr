@@ -456,6 +456,9 @@ float pnoise(vec2 P, vec2 rep)
 
 			var renderer = undefined;
 
+            // Renderstatus
+            var play = true;
+
 			// Meshes
 			var randomMesh;
 			var paintingMesh;
@@ -747,8 +750,9 @@ float pnoise(vec2 P, vec2 rep)
 
 			function animate() {
 				render();
-
-			    requestAnimationFrame( animate );
+                if(play) {
+                    requestAnimationFrame( animate );
+                }
 			}
 			 
 			function render() {
