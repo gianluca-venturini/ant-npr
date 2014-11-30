@@ -108,6 +108,10 @@
 
 			uniform float deathTreshold;
 
+			uniform float initialEnergy;
+
+			uniform vec2 newAnt;
+
 			varying vec2 vUv;
 
 			vec4 mod289(vec4 x)
@@ -310,6 +314,11 @@ float pnoise(vec2 P, vec2 rep)
 					d = rotate(d, noise / 2.0);
 					gl_FragColor = vec4(d.x + 0.5, d.y + 0.5, offspringTreshold, 1.0);
 				}
+
+				if(abs(newAnt.x * dx - vUv.x) < dx / 2.0 &&
+					   abs(newAnt.y * dy - vUv.y) < dy / 2.0) {
+						   gl_FragColor = vec4(1,0,initialEnergy,1);
+					   }
 
 
 
@@ -544,6 +553,8 @@ float pnoise(vec2 P, vec2 rep)
 				initialPositions: undefined,
 			};
 
+			var newAnt = new THREE.Vector2( -1.0,   -1.0 );
+
             startUI();
 
 			var sensoryVectors = [new THREE.Vector2( 5.0,   0.0 ),
@@ -559,7 +570,7 @@ float pnoise(vec2 P, vec2 rep)
 			var sensoryWeights = [0.1, 0.4, 0.3, 0.1, 0.4, 0.4, 0.3, 0.3, 0.7];
 
 			var antsInitialposition = [ new THREE.Vector2( 100, 100 ),
-										new THREE.Vector2( 1000, 200 ),
+										new THREE.Vector2( 700, 300 ),
 										new THREE.Vector2( 300, 300 ),];
 			 
 			init();
@@ -642,6 +653,8 @@ float pnoise(vec2 P, vec2 rep)
 					noiseMin: {type: "f", value: parameters.noiseMin},
 					noiseMax: {type: "f", value: parameters.noiseMax},
 					deathTreshold: {type: "f", value: parameters.deathTreshold},
+					initialEnergy: { type: "f", value: parameters.initialEnergy},
+					newAnt: { type: "v2", value: newAnt},
 				};
 
 				finalUniforms = {
@@ -816,6 +829,7 @@ float pnoise(vec2 P, vec2 rep)
 				*/
 
 				antUniforms.antTexture.value = ant;
+				antUniforms.newAnt = newAnt;
 				antMesh.material.needsUpdate = true;
 
 				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
@@ -851,6 +865,9 @@ float pnoise(vec2 P, vec2 rep)
 
 				// Draw painting on the screen
 				renderer.render( finalScene, camera);
+
+				// reset the new ant
+				newAnt = new THREE.Vector2( -1.0,   -1.0 );
 			}
 			 
 			function onWindowResize() {
