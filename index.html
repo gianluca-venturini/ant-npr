@@ -27,7 +27,14 @@
 		</script>
 
 		<script type="x-shader/x-fragment" id="randomFragmentShader">
+			#define NUM_ANT 3
+
 			uniform float initialEnergy;
+
+			uniform vec2 ants[NUM_ANT];
+
+			uniform float dx;
+			uniform float dy;
 
 			varying vec2 vUv;
 
@@ -45,13 +52,21 @@
 				}
 				*/
 
+				/*
 				if(vUv.x > 0.546 && vUv.x < 0.55 && vUv.y > 0.546 && vUv.y < 0.55) {
 					gl_FragColor = vec4(1,0,initialEnergy,1);
 				}
 				else {
 					gl_FragColor = vec4(0,0,0,0);
 				}
-				//gl_FragColor = vec4(0, 0, 0, 0); // Works; Displays Flat Color
+				*/
+				gl_FragColor = vec4(0, 0, 0, 0);
+				for(int i=0; i<NUM_ANT; i++) {
+					if(abs(ants[i].x * dx - vUv.x) < dx / 2.0 &&
+					   abs(ants[i].y * dy - vUv.y) < dy / 2.0) {
+						   gl_FragColor = vec4(1,0,initialEnergy,1);
+					   }
+				}
 			}
 		</script>
 
@@ -66,8 +81,9 @@
 		</script>
 
 		<script type="x-shader/x-fragment" id="antFragmentShader">
-			#define W_DIM 23
+			#define W_DIM 15
 			#define N_SENS 9
+			#define C_FACTOR 2.0
 
 			uniform float gain;
 			uniform float decay;
@@ -227,7 +243,7 @@ float pnoise(vec2 P, vec2 rep)
 				dp.y += (noiseMin + (noiseMax-noiseMin)/2.0 * (1.0 + noise)) * dy;
 
 				// Clamping
-				dp = vec2( clamp(dp.x, -dx * 5.0, dx * 5.0), clamp(dp.y, -dy * 5.0, dy * 5.0) );
+				dp = vec2( clamp(dp.x, -dx * C_FACTOR, dx * C_FACTOR), clamp(dp.y, -dy * C_FACTOR, dy * C_FACTOR) );
 
 				return dp;
 
@@ -291,7 +307,7 @@ float pnoise(vec2 P, vec2 rep)
 				if(ant.z > offspringTreshold) {
 					vec2 d = vec2(ant.x - 0.5, ant.y - 0.5);
 					float noise = cnoise(vUv); // * (descVelMax - descVelMin) / 2;
-					d = rotate(d, noise);
+					d = rotate(d, noise / 2.0);
 					gl_FragColor = vec4(d.x + 0.5, d.y + 0.5, offspringTreshold, 1.0);
 				}
 
@@ -349,26 +365,40 @@ float pnoise(vec2 P, vec2 rep)
 		</script>
 
 		<script type="x-shader/x-fragment" id="livingFragmentShader">
+			#define W_DIM 15
+
 			uniform sampler2D livingTexture;
 			uniform sampler2D antTexture;
 
 			uniform float dx;
 			uniform float dy;
 
+			uniform float depositRate;
+			uniform float depositTransp;
+
 			varying vec2 vUv;
 
 			void main() {
-				vec2 p = vUv;
 
-				vec4 ant = texture2D(antTexture, p);
-				if(ant.z != 0.0) {
-					gl_FragColor = texture2D(livingTexture, p);
-					gl_FragColor.x -= 0.3;
-					gl_FragColor.y -= 0.3;
-					gl_FragColor.z -= 0.3;
-				}
-				else
-					gl_FragColor = texture2D(livingTexture, p);
+				gl_FragColor = texture2D(livingTexture, vUv);
+				for(int i=0; i<W_DIM; i++)
+					for(int j=0; j<W_DIM; j++) {
+						vec2 p = vUv;
+						p.x += (float(i)-float(W_DIM/2+1)) * dx;
+						p.y += (float(j)-float(W_DIM/2+1)) * dy;
+						vec4 ant = texture2D(antTexture, p);
+						float energy = ant.z;
+						vec2 d = p - vUv;
+						d.y *= dx/dy;
+						if(energy > 0.0 && length(d) < depositRate * energy * dx) {
+							gl_FragColor = texture2D(livingTexture, p);
+							gl_FragColor.x -= depositTransp;
+							gl_FragColor.y -= depositTransp;
+							gl_FragColor.z -= depositTransp;
+						}
+
+					}
+
 			}
 		</script>
 
@@ -499,8 +529,8 @@ float pnoise(vec2 P, vec2 rep)
 				gain: 0.7,
 				decay: 0.9,
 				consRate: undefined,
-				depositRate: undefined,
-				depositTransp: undefined,
+				depositRate: 1.0,
+				depositTransp: 1.0,
 				dTranspMax: undefined,
 				dTranspMin: undefined,
 				initialEnergy: 1.0,
@@ -526,7 +556,11 @@ float pnoise(vec2 P, vec2 rep)
 								  new THREE.Vector2( 4.0,  -6.0 ),
 								  new THREE.Vector2( 3.0,  -9.0 ),
 			];
-			var sensoryWeights = [0.1, 0.4, 0.3, 0.2, 1.9, 0.4, 0.3, 0.2, 1.9];
+			var sensoryWeights = [0.1, 0.4, 0.3, 0.1, 0.4, 0.4, 0.3, 0.3, 0.7];
+
+			var antsInitialposition = [ new THREE.Vector2( 100, 100 ),
+										new THREE.Vector2( 1000, 200 ),
+										new THREE.Vector2( 300, 300 ),];
 			 
 			init();
 			//animate();
@@ -563,12 +597,17 @@ float pnoise(vec2 P, vec2 rep)
 
 				// Create uniforms
 				randomUniforms = {
-						initialEnergy: { type: "f", value: parameters.initialEnergy}
+					initialEnergy: { type: "f", value: parameters.initialEnergy},
+					dx: { type: "f", value: 1/window.innerWidth},
+					dy: { type: "f", value: 1/window.innerHeight},
+					ants: { type: "v2v", value: antsInitialposition}
 				};
 
 				paintingUniforms = {
 					paintingTexture: { type: "t", value: painting },
 					antTexture: { type: "t", value: ant },
+					depositTransp: { type: "f", value: parameters.depositTransp },
+					depositRate: { type: "f", value: parameters.depositRate },
 				};
 
 				livingUniforms = {
@@ -576,6 +615,8 @@ float pnoise(vec2 P, vec2 rep)
 					antTexture: { type: "t", value: ant },
 					dx: { type: "f", value: 1/window.innerWidth},
 					dy: { type: "f", value: 1/window.innerHeight},
+					depositTransp : { type: "f", value: parameters.depositTransp },
+					depositRate: { type: "f", value: parameters.depositRate },
 				};
 
 				antCopyUniforms = {
