@@ -315,10 +315,12 @@ float pnoise(vec2 P, vec2 rep)
 					gl_FragColor = vec4(d.x + 0.5, d.y + 0.5, offspringTreshold, 1.0);
 				}
 
+
 				if(abs(newAnt.x * dx - vUv.x) < dx / 2.0 &&
 					   abs(newAnt.y * dy - vUv.y) < dy / 2.0) {
-						   gl_FragColor = vec4(1,0,initialEnergy,1);
+						   gl_FragColor = vec4(1, 0, initialEnergy, 1);
 					   }
+
 
 
 
@@ -829,12 +831,13 @@ float pnoise(vec2 P, vec2 rep)
 				*/
 
 				antUniforms.antTexture.value = ant;
-				antUniforms.newAnt = newAnt;
 				antMesh.material.needsUpdate = true;
+
+				//antUniforms.newAnt.x  = 1000;
+				//antUniforms.newAnt.y  = 100;
 
 				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				renderer.render( antScene, camera, ant, true);
-
 
 				// Update living
 
@@ -867,7 +870,8 @@ float pnoise(vec2 P, vec2 rep)
 				renderer.render( finalScene, camera);
 
 				// reset the new ant
-				newAnt = new THREE.Vector2( -1.0,   -1.0 );
+				antUniforms.newAnt.x  = -1;
+				antUniforms.newAnt.y  = -1;
 			}
 			 
 			function onWindowResize() {
