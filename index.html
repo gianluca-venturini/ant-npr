@@ -498,7 +498,13 @@ float pnoise(vec2 P, vec2 rep)
 			var renderer = undefined;
 
             // Renderstatus
-            var play = true;
+            var play = false;
+            var RenderingView = {
+                LIVING: "living",
+                PAINTING: "painting"
+            };
+
+            var renderingView = RenderingView.PAINTING;
 
 			// Meshes
 			var randomMesh;
@@ -552,7 +558,7 @@ float pnoise(vec2 P, vec2 rep)
 				vel: 0.002,
 				noiseMin: -3.0,
 				noiseMax: 3.0,
-				initialPositions: undefined,
+				initialPositions: undefined
 			};
 
 			var newAnt = new THREE.Vector2( -1.0,   -1.0 );
@@ -573,7 +579,7 @@ float pnoise(vec2 P, vec2 rep)
 
 			var antsInitialposition = [ new THREE.Vector2( 100, 100 ),
 										new THREE.Vector2( 700, 300 ),
-										new THREE.Vector2( 300, 300 ),];
+										new THREE.Vector2( 300, 300 )];
 			 
 			init();
 			//animate();
@@ -862,7 +868,12 @@ float pnoise(vec2 P, vec2 rep)
 				painting = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				renderer.render( paintingScene, camera, painting, true);
 
-				finalUniforms.paintingTexture.value = living;
+                if(renderingView == RenderingView.LIVING) {
+                    finalUniforms.paintingTexture.value = living;
+                } else {
+                    finalUniforms.paintingTexture.value = painting;
+                }
+
 				finalMesh.material.needsUpdate = true;
 
 

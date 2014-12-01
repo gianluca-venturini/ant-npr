@@ -1,7 +1,11 @@
 var UIbindings;
 $(document).ready(function() {
 
-
+    d3.select("#canvas").on("click", function() {
+        //newAnt = THREE.Vector2(d3.mouse(this)[0], d3.mouse(this)[1]);
+        antUniforms.newAnt.x = d3.mouse(this)[0];
+        antUniforms.newAnt.y = d3.mouse(this)[1];
+    });
 
 });
 
@@ -25,6 +29,31 @@ var startUI = function() {
         .on("click", function() {
             UIStopRendering();
             console.log("stop!");
+        });
+
+    menu.append("button")
+        .classed("print-parameters", true)
+        .attr("type", "button")
+        .html("Get param")
+        .on("click", function() {
+            var message = "";
+            d3.keys(parameters).forEach(function(key) {
+                message += key + "=" + parameters[key] + "\n";
+            });
+
+            alert(message);
+        });
+
+    menu.append("button")
+        .classed("toggle-living-painting", true)
+        .attr("type", "button")
+        .html("Change view")
+        .on("click", function() {
+            if(renderingView == RenderingView.LIVING) {
+                renderingView = RenderingView.PAINTING;
+            } else {
+                renderingView = RenderingView.LIVING;
+            }
         });
 
     var parametersBox = d3.select("ul.parameters");
