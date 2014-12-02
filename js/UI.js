@@ -3,8 +3,10 @@ $(document).ready(function() {
 
     d3.select("#canvas").on("click", function() {
         //newAnt = THREE.Vector2(d3.mouse(this)[0], d3.mouse(this)[1]);
-        antUniforms.newAnt.x = d3.mouse(this)[0];
-        antUniforms.newAnt.y = d3.mouse(this)[1];
+        var canvasSizeHeight = parseFloat(d3.select(this).attr("height"));
+
+        antUniforms.newAnt.value.x = d3.mouse(this)[0];
+        antUniforms.newAnt.value.y = (canvasSizeHeight /2) - d3.mouse(this)[1];
     });
 
 });

@@ -543,7 +543,7 @@ float pnoise(vec2 P, vec2 rep)
 
 			// Parameters
 			var parameters = {
-				gain: 0.7,
+				gain: 1.0,
 				decay: 0.9,
 				consRate: undefined,
 				depositRate: 1.0,
@@ -824,7 +824,7 @@ float pnoise(vec2 P, vec2 rep)
 				// Init ants
 				if(firstExecution == true) {
 					firstExecution = false;
-					renderer.render(randomScene, camera, ant, true);
+					//renderer.render(randomScene, camera, ant, true);
 				}
 
 				// Update ants
@@ -839,8 +839,7 @@ float pnoise(vec2 P, vec2 rep)
 				antUniforms.antTexture.value = ant;
 				antMesh.material.needsUpdate = true;
 
-				//antUniforms.newAnt.x  = 1000;
-				//antUniforms.newAnt.y  = 100;
+                antUniforms.needsUpdate = true;
 
 				ant = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 				renderer.render( antScene, camera, ant, true);
@@ -881,8 +880,8 @@ float pnoise(vec2 P, vec2 rep)
 				renderer.render( finalScene, camera);
 
 				// reset the new ant
-				antUniforms.newAnt.x  = -1;
-				antUniforms.newAnt.y  = -1;
+				antUniforms.newAnt.value.x  = -1;
+				antUniforms.newAnt.value.y  = -1;
 			}
 			 
 			function onWindowResize() {
