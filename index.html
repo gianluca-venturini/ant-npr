@@ -318,7 +318,9 @@ float pnoise(vec2 P, vec2 rep)
 
 				if(abs(newAnt.x * dx - vUv.x) < dx / 2.0 &&
 					   abs(newAnt.y * dy - vUv.y) < dy / 2.0) {
-						   gl_FragColor = vec4(1, 0, initialEnergy, 1);
+							float noiseX = cnoise(vUv);
+							float noiseY = cnoise(vec2(vUv.x+noiseX, vUv.y+noiseX));
+							gl_FragColor = vec4(noiseX, noiseY, initialEnergy, 1);
 					   }
 
 
