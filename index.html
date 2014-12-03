@@ -81,7 +81,7 @@
 		</script>
 
 		<script type="x-shader/x-fragment" id="antFragmentShader">
-			#define W_DIM 15
+			#define W_DIM 13
 			#define N_SENS 9
 			#define C_FACTOR 2.0
 
@@ -310,17 +310,18 @@ float pnoise(vec2 P, vec2 rep)
 				ant = texture2D(antTexture, vUv);
 				if(ant.z > offspringTreshold) {
 					vec2 d = vec2(ant.x - 0.5, ant.y - 0.5);
-					float noise = cnoise(vUv); // * (descVelMax - descVelMin) / 2;
-					d = rotate(d, noise / 2.0);
+					float noise = cnoise(vUv * 10.0); // * (descVelMax - descVelMin) / 2;
+					d = rotate(d, noise * 3.0);
 					gl_FragColor = vec4(d.x + 0.5, d.y + 0.5, offspringTreshold, 1.0);
 				}
 
 
 				if(abs(newAnt.x * dx - vUv.x) < dx / 2.0 &&
 					   abs(newAnt.y * dy - vUv.y) < dy / 2.0) {
-							float noiseX = cnoise(vUv);
-							float noiseY = cnoise(vec2(vUv.x+noiseX, vUv.y+noiseX));
-							gl_FragColor = vec4(noiseX, noiseY, initialEnergy, 1);
+							float noiseX = cnoise(vUv*3.0);
+							float noiseY = cnoise(vec2(vUv.x*3.0+noiseX, vUv.y*3.0+noiseX));
+							gl_FragColor = vec4((noiseX+1.0), (noiseY+1.0), initialEnergy, 1);
+							//gl_FragColor = vec4(1.0, 0.5, initialEnergy, 1);
 					   }
 
 
@@ -426,8 +427,16 @@ float pnoise(vec2 P, vec2 rep)
 		</script>
 
 		<script type="x-shader/x-fragment" id="paintingFragmentShader">
+			#define W_DIM 15
+
 			uniform sampler2D paintingTexture;
 			uniform sampler2D antTexture;
+
+			uniform float dx;
+			uniform float dy;
+
+			uniform float depositRate;
+			uniform float depositTransp;
 
 			varying vec2 vUv;
 
@@ -439,12 +448,31 @@ float pnoise(vec2 P, vec2 rep)
 
 				vec4 ant =  texture2D(antTexture, vUv);
 
+				/*
 				if(ant.x > 0.0) {
 					gl_FragColor.x += 1.0;
 					gl_FragColor.y += 1.0;
 					gl_FragColor.z += 1.0;
 				}
-				//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
+				*/
+				gl_FragColor = texture2D(paintingTexture, vUv);
+				for(int i=0; i<W_DIM; i++)
+					for(int j=0; j<W_DIM; j++) {
+						vec2 p = vUv;
+						p.x += (float(i)-float(W_DIM/2+1)) * dx;
+						p.y += (float(j)-float(W_DIM/2+1)) * dy;
+						vec4 ant = texture2D(antTexture, p);
+						float energy = ant.z;
+						vec2 d = p - vUv;
+						d.y *= dx/dy;
+						if(energy > 0.0 && length(d) < depositRate * energy * dx) {
+							gl_FragColor = texture2D(paintingTexture, p);
+							gl_FragColor.x += depositTransp;
+							gl_FragColor.y += depositTransp;
+							gl_FragColor.z += depositTransp;
+						}
+
+					}
 			}
 		</script>
 
@@ -566,7 +594,7 @@ float pnoise(vec2 P, vec2 rep)
 			var newAnt = new THREE.Vector2( -1.0,   -1.0 );
 
             startUI();
-
+			/*
 			var sensoryVectors = [new THREE.Vector2( 5.0,   0.0 ),
 								  new THREE.Vector2( 7.0,   3.0 ),
 								  new THREE.Vector2( 8.0,   6.0 ),
@@ -578,6 +606,19 @@ float pnoise(vec2 P, vec2 rep)
 								  new THREE.Vector2( 3.0,  -9.0 ),
 			];
 			var sensoryWeights = [0.1, 0.4, 0.3, 0.1, 0.4, 0.4, 0.3, 0.3, 0.7];
+			*/
+
+			var sensoryVectors = [new THREE.Vector2( 5.0,   0.0 ),
+				new THREE.Vector2( 14.0,   6.0  ),
+				new THREE.Vector2( 16.0,   12.0 ),
+				new THREE.Vector2( 8.0,    12.0 ),
+				new THREE.Vector2( 6.0,    18.0 ),
+				new THREE.Vector2( 14.0,  -6.0  ),
+				new THREE.Vector2( 16.0,  -12.0 ),
+				new THREE.Vector2( 8.0,   -12.0 ),
+				new THREE.Vector2( 6.0,   -18.0 ),
+			];
+			var sensoryWeights = [0.4, 0.1, 0.2, 0.4, 0.1, 0.4, 0.2, 0.3, 0.2];
 
 			var antsInitialposition = [ new THREE.Vector2( 100, 100 ),
 										new THREE.Vector2( 700, 300 ),
@@ -629,6 +670,8 @@ float pnoise(vec2 P, vec2 rep)
 					antTexture: { type: "t", value: ant },
 					depositTransp: { type: "f", value: parameters.depositTransp },
 					depositRate: { type: "f", value: parameters.depositRate },
+					dx: { type: "f", value: 1/window.innerWidth},
+					dy: { type: "f", value: 1/window.innerHeight},
 				};
 
 				livingUniforms = {
