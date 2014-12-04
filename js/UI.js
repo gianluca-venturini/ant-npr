@@ -6,7 +6,7 @@ $(document).ready(function() {
         var canvasSizeHeight = parseFloat(d3.select(this).attr("height"));
 
         antUniforms.newAnt.value.x = d3.mouse(this)[0];
-        antUniforms.newAnt.value.y = (canvasSizeHeight/ 2) - d3.mouse(this)[1];
+        antUniforms.newAnt.value.y = (canvasSizeHeight/ (window.devicePixelRatio)) - d3.mouse(this)[1];
     });
 
 });
