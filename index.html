@@ -4,7 +4,8 @@
 		<title>My first Three.js app</title>
         <!-- FONTS -->
         <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,600,700' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="style/style.css"/>
+    <link rel="stylesheet" href="style/style.css"/>
+    <link rel="stylesheet" href="style/font.css"/>
 
         <script src="js/d3.js"></script>
         <script src="js/jquery.js"></script>
@@ -511,8 +512,14 @@ float pnoise(vec2 P, vec2 rep)
                     <!--<hr/>-->
                 <!--</li>-->
             </ul>
-        </div>
+            <div class="presets">
 
+            </div>
+
+        </div>
+        <div class="controls">
+
+        </div>
 
 
 
@@ -575,11 +582,11 @@ float pnoise(vec2 P, vec2 rep)
 			var parameters = {
 				gain: 1.0,
 				decay: 0.9,
-				consRate: undefined,
+				//consRate: undefined,
 				depositRate: 1.0,
 				depositTransp: 1.0,
-				dTranspMax: undefined,
-				dTranspMin: undefined,
+				//dTranspMax: undefined,
+				//dTranspMin: undefined,
 				initialEnergy: 1.0,
 				deathTreshold: 0.3,
 				offspringTreshold: 0.999999,
@@ -588,7 +595,7 @@ float pnoise(vec2 P, vec2 rep)
 				vel: 0.002,
 				noiseMin: -3.0,
 				noiseMax: 3.0,
-				initialPositions: undefined
+				//initialPositions: undefined
 			};
 
 			var newAnt = new THREE.Vector2( -1.0,   -1.0 );
@@ -829,7 +836,7 @@ float pnoise(vec2 P, vec2 rep)
 				//requestAnimationFrame( animate );
 
 				if(firstExecution == true) {
-					renderer = new THREE.WebGLRenderer();
+					renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});
 					renderer.setSize( window.innerWidth, window.innerHeight );
 					renderer.domElement.id = "canvas";
 					document.body.appendChild( renderer.domElement );

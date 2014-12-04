@@ -6,7 +6,7 @@ $(document).ready(function() {
         var canvasSizeHeight = parseFloat(d3.select(this).attr("height"));
 
         antUniforms.newAnt.value.x = d3.mouse(this)[0];
-        antUniforms.newAnt.value.y = (canvasSizeHeight) - d3.mouse(this)[1];
+        antUniforms.newAnt.value.y = (canvasSizeHeight/ 2) - d3.mouse(this)[1];
     });
 
 });
@@ -14,42 +14,44 @@ $(document).ready(function() {
 var startUI = function() {
     var menu = d3.select(".menu");
 
-    menu.append("button")
-        .classed("restart-button", true)
-        .attr("type", "button")
-        .html("Restart")
-        .on("click", function() {
-            UIStartRendering();
+    var controls = d3.select(".controls");
 
-            console.log("restart!");
+    controls.append("button")
+        .classed("toggle-rendering-button", true)
+        .classed("icon-play", true)
+        .on("click", function() {
+            if(play == false) {
+                UIStartRendering();
+            } else {
+                UIStopRendering();
+            }
         });
 
-    menu.append("button")
-        .classed("stop-button", true)
-        .attr("type", "button")
-        .html("Stop")
-        .on("click", function() {
-            UIStopRendering();
-            console.log("stop!");
-        });
 
-    menu.append("button")
+    controls.append("button")
         .classed("print-parameters", true)
-        .attr("type", "button")
-        .html("Get param")
+        .classed("icon-clipboard", true)
         .on("click", function() {
-            var message = "";
+            var message = "{\n";
             d3.keys(parameters).forEach(function(key) {
-                message += key + "=" + parameters[key] + "\n";
+                message += "\"" + key + "\" :" + parameters[key] + ",\n";
             });
+            message += "}";
 
             alert(message);
         });
 
-    menu.append("button")
+    controls.append("button")
+        .classed("save-picture", true)
+        .classed("icon-disk", true)
+        .on("click", function() {
+            var dataUrl = renderer.domElement.toDataURL("image/png");
+            window.open(dataUrl, '_blank');
+        });
+
+    controls.append("button")
         .classed("toggle-living-painting", true)
-        .attr("type", "button")
-        .html("Change view")
+        .classed("icon-pictures3", true)
         .on("click", function() {
             if(renderingView == RenderingView.LIVING) {
                 renderingView = RenderingView.PAINTING;
@@ -57,6 +59,44 @@ var startUI = function() {
                 renderingView = RenderingView.LIVING;
             }
         });
+
+    controls.append("button")
+        .classed("close-menu", true)
+        .classed("icon-cogs", true)
+        .on("click", function() {
+            $(".menu").fadeToggle();
+        });
+
+    /*
+     menu.append("input")
+     .attr("type", "file")
+     .on("change", function() {
+     alert("changed");
+     });*/
+
+    d3.json("data/presets.json", function(json) {
+        var presets = d3.select(".presets");
+
+        var presentEl = presets.selectAll(".preset").data(json);
+
+        presentEl.enter()
+            .append("button")
+            .classed("drawing-preset", true)
+            .html(function(d) {
+                return d["name"];
+            })
+            .on("click", function(d) {
+                for(var key in d) {
+                    if(key != "name") {
+                        parameters[key] = d[key];
+                    }
+                }
+
+                updateUIParam();
+            });
+    });
+
+
 
     var parametersBox = d3.select("ul.parameters");
 
@@ -99,11 +139,23 @@ var startUI = function() {
         });
 };
 
+var updateUIParam = function() {
+    var paramArray = d3.keys(parameters);
+    var parametersControls = d3.selectAll(".parameter").data(paramArray);
+
+    for(var key in parameters) {
+        d3.select("#" + key).attr("value", parameters[key]);
+    }
+};
+
 
 
 var UIStartRendering = function() {
     init();
 
+    var button = d3.select(".toggle-rendering-button");
+    button.classed("icon-pause", true);
+    button.classed("icon-play", false);
     if(play == false) {
         play = true;
         requestAnimationFrame( animate );
@@ -111,5 +163,8 @@ var UIStartRendering = function() {
 };
 
 var UIStopRendering = function() {
-   play = false;
+    play = false;
+    var button = d3.select(".toggle-rendering-button");
+    button.classed("icon-pause", false);
+    button.classed("icon-play", true);
 };
