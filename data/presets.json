@@ -88,5 +88,20 @@
         "vel" :0.001,
         "noiseMin" :0.5,
         "noiseMax" :1.5
+    },
+    {
+        "name" : "Oil on canvas",
+        "gain" :2,
+        "decay" :0.5,
+        "depositRate" :1,
+        "depositTransp" :0.02,
+        "initialEnergy" :1,
+        "deathTreshold" :0,
+        "offspringTreshold" :0.5,
+        "descVelMin" :-1.5,
+        "descVelMax" :1.5,
+        "vel" :0.001,
+        "noiseMin" :-5,
+        "noiseMax" :5
     }
 ]
