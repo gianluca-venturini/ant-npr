@@ -50,6 +50,14 @@ var startUI = function() {
         });
 
     controls.append("button")
+        .classed("load-picture", true)
+        .classed("icon-plus2", true)
+        .on("click", function() {
+            //painting = THREE.ImageUtils.loadTexture("image/girl.jpg");
+            //alert("Lol");
+        });
+
+    controls.append("button")
         .classed("toggle-living-painting", true)
         .classed("icon-pictures3", true)
         .on("click", function() {
@@ -67,12 +75,36 @@ var startUI = function() {
             $(".menu").fadeToggle();
         });
 
-    /*
+
      menu.append("input")
      .attr("type", "file")
+     .attr("id", "file-name")
      .on("change", function() {
-     alert("changed");
-     });*/
+             var f = document.getElementById("file-name");
+            //console.log(document.getElementById("file-name").files);
+             if (f.files && f.files[0]) {
+                 var reader = new FileReader();
+
+                 var image = document.createElement( 'img' );
+                 var texture = new THREE.Texture( image );
+                 reader.onload = function (e) {
+                     image.src = e.target.result;
+                     var texture = new THREE.Texture( image );
+                     /*
+                     $('#preview')
+                         .attr('src', e.target.result)
+                         .width(150)
+                         .height(200);*/
+                     texture.needsUpdate = true;
+                     initLiving = texture;
+                     antUniforms.livingTexture.value = initLiving;
+                     livingUniforms.livingTexture.value = initLiving;
+                     skipLoadImage = true;
+                 };
+
+                 reader.readAsDataURL(f.files[0]);
+             }
+     });
 
     d3.json("data/presets.json", function(json) {
         var presets = d3.select(".presets");

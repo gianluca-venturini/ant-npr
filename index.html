@@ -521,11 +521,7 @@ float pnoise(vec2 P, vec2 rep)
 
         </div>
 
-
-
-
-
-
+		<img src="" id="preview"/>
 
 
 		<script src="js/three.min.js"></script>
@@ -577,6 +573,9 @@ float pnoise(vec2 P, vec2 rep)
 			var antCopyUniforms;
 			var antUniforms;
 			var finalUniforms;
+
+			// Hacks
+			var skipLoadImage = false;
 
 			// Parameters
 			var parameters = {
@@ -844,11 +843,17 @@ float pnoise(vec2 P, vec2 rep)
 
 					window.addEventListener( 'resize', onWindowResize, false );
 
-					initLiving = THREE.ImageUtils.loadTexture("image/girl.jpg", {}, function () {
+					if(skipLoadImage == false)
+						initLiving = THREE.ImageUtils.loadTexture("image/girl.jpg", {}, function () {
+							antUniforms.livingTexture.value = initLiving;
+							livingUniforms.livingTexture.value = initLiving;
+							animate();
+						});
+					else {
 						antUniforms.livingTexture.value = initLiving;
 						livingUniforms.livingTexture.value = initLiving;
 						animate();
-					});
+					}
 				}
 				else {
 					antUniforms.livingTexture.value = initLiving;
