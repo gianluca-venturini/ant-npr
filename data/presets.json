@@ -103,5 +103,35 @@
         "vel" :0.001,
         "noiseMin" :-5,
         "noiseMax" :5
+    },
+    {
+        "name" : "Lines",
+        "gain" :1,
+        "decay" :0.5,
+        "depositRate" :2,
+        "depositTransp" :0.01,
+        "initialEnergy" :2,
+        "deathTreshold" :0,
+        "offspringTreshold" :0.7,
+        "descVelMin" :-1.5,
+        "descVelMax" :1.5,
+        "vel" :0.009,
+        "noiseMin" :-3,
+        "noiseMax" :3
+    },
+    {
+        "name" : "Hyper watercolor",
+        "gain" :100,
+        "decay" :0.5,
+        "depositRate" :2,
+        "depositTransp" :0.01,
+        "initialEnergy" :2,
+        "deathTreshold" :0,
+        "offspringTreshold" :0.8,
+        "descVelMin" :-1.5,
+        "descVelMax" :1.5,
+        "vel" :0.009,
+        "noiseMin" :-3,
+        "noiseMax" :3
     }
 ]
