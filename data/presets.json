@@ -88,5 +88,35 @@
         "vel" :0.009,
         "noiseMin" :-3,
         "noiseMax" :3
+    },
+    {
+        "name": "Child",
+        "gain" :1,
+        "decay" :0.7,
+        "depositRate" :0.1,
+        "depositTransp" :0.004,
+        "initialEnergy" :1,
+        "deathTreshold" :0,
+        "offspringTreshold" :0.5,
+        "descVelMin" :-1.5,
+        "descVelMax" :1.5,
+        "vel" :0.001,
+        "noiseMin" :-5,
+        "noiseMax" :5
+    },
+    {
+        "name": "London Tube",
+        "gain" :1.4,
+        "decay" :0.4,
+        "depositRate" :0.1,
+        "depositTransp" :0.004,
+        "initialEnergy" :1,
+        "deathTreshold" :0,
+        "offspringTreshold" :0.5,
+        "descVelMin" :-1.5,
+        "descVelMax" :1.5,
+        "vel" :0.001,
+        "noiseMin" :-5,
+        "noiseMax" :5
     }
 ]
