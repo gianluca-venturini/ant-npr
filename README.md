@@ -13,4 +13,15 @@ The user can load her own image using the button UPLOAD, once the image is loade
 
 The button HIDE_SETTINGS is useful in order to hide the parameters menu and for exploit the entire space on the monitor.
 
-The button <img src="image/save.png"> let the user save locally the final drawing.
+The button SAVE let the user save locally the final drawing.
+
+
+Buttons:
+    <img src="image/play.png"> PLAY button
+    <img src="image/image.png"> IMAGE button
+    <img src="image/upload.png"> UPLOAD button
+    <img src="image/hide.png"> HIDE_SETTINGS button
+    <img src="image/save.png"> SAVE button
+
+
+<iframe src="//player.vimeo.com/video/114323748" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <p><a href="http://vimeo.com/114323748">Colony Art</a> from <a href="http://vimeo.com/user12649074">Massimo</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
