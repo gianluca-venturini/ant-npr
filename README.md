@@ -1,4 +1,4 @@
-<h2>Non photorealistic rendering using KANTS algorithm</h2>
+<h2>Non-Photorealistic Rendering with an Ant Algorithm</h2>
 
 The project is hosted at <a href="http://gianluca-venturini.github.io/ant-npr">this page</a>
 
@@ -13,4 +13,4 @@ The user can load her own image using the button UPLOAD, once the image is loade
 
 The button HIDE_SETTINGS is useful in order to hide the parameters menu and for exploit the entire space on the monitor.
 
-The button SAVE let the user save locally the final drawing.
+The button <img src="image/save.png"> let the user save locally the final drawing.
