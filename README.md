@@ -24,4 +24,4 @@ Buttons:<br>
     <img src="image/save.png"> SAVE button<br>
 
 
-<iframe src="//player.vimeo.com/video/114323748" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <p><a href="http://vimeo.com/114323748">Colony Art</a> from <a href="http://vimeo.com/user12649074">Massimo</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+[![ScreenShot](http://gianluca-venturini.github.io/ant-npr/image/video.png)](https://vimeo.com/114323748)
