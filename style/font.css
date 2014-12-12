@@ -1,16 +1,16 @@
 @font-face {
-    font-family: 'icomoon';
-    src:url('../fonts/icomoon.eot?-zhxque');
-    src:url('../fonts/icomoon.eot?#iefix-zhxque') format('embedded-opentype'),
-    url('../fonts/icomoon.woff?-zhxque') format('woff'),
-    url('../fonts/icomoon.ttf?-zhxque') format('truetype'),
-    url('../fonts/icomoon.svg?-zhxque#icomoon') format('svg');
+    font-family: 'Ant';
+    src:url('../fonts/Ant.eot?spw0wn');
+    src:url('../fonts/Ant.eot?#iefixspw0wn') format('embedded-opentype'),
+    url('../fonts/Ant.woff?spw0wn') format('woff'),
+    url('../fonts/Ant.ttf?spw0wn') format('truetype'),
+    url('../fonts/Ant.svg?spw0wn#Ant') format('svg');
     font-weight: normal;
     font-style: normal;
 }
 
 [class^="icon-"], [class*=" icon-"] {
-    font-family: 'icomoon';
+    font-family: 'Ant';
     speak: none;
     font-style: normal;
     font-weight: normal;
@@ -23,23 +23,14 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-export:before {
+.icon-publish:before {
     content: "\e600";
 }
-.icon-link:before {
+.icon-upload:before {
     content: "\e601";
 }
-.icon-brush:before {
+.icon-download:before {
     content: "\e602";
-}
-.icon-minus:before {
-    content: "\e610";
-}
-.icon-list:before {
-    content: "\e603";
-}
-.icon-pictures:before {
-    content: "\e604";
 }
 .icon-disk:before {
     content: "\e605";
@@ -47,53 +38,23 @@
 .icon-play:before {
     content: "\e606";
 }
-.icon-pause:before {
-    content: "\e607";
+.icon-stop:before {
+    content: "\e603";
 }
-.icon-twitter:before {
-    content: "\e608";
-}
-.icon-facebook:before {
-    content: "\e609";
-}
-.icon-camera:before {
-    content: "\e60a";
-}
-.icon-cancel:before {
-    content: "\e611";
-}
-.icon-cancel2:before {
-    content: "\e612";
-}
-.icon-plus:before {
-    content: "\e613";
-}
-.icon-plus2:before {
-    content: "\e614";
-}
-.icon-cog:before {
-    content: "\e615";
+.icon-upload2:before {
+    content: "\e604";
 }
 .icon-cogs:before {
     content: "\e616";
 }
-.icon-cog2:before {
-    content: "\e617";
-}
-.icon-picture:before {
-    content: "\e60b";
-}
-.icon-pictures2:before {
-    content: "\e60c";
-}
 .icon-pictures3:before {
     content: "\e60d";
 }
-.icon-heart:before {
-    content: "\e618";
+.icon-upload3:before {
+    content: "\e607";
 }
-.icon-popout:before {
-    content: "\e60e";
+.icon-folder:before {
+    content: "\e608";
 }
 .icon-clipboard:before {
     content: "\e60f";

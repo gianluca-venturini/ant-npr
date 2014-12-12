@@ -7,6 +7,10 @@ $(document).ready(function() {
 
         antUniforms.newAnt.value.x = d3.mouse(this)[0];
         antUniforms.newAnt.value.y = (canvasSizeHeight/ (window.devicePixelRatio)) - d3.mouse(this)[1];
+
+        if(play == false) {
+            UIStartRendering();
+        }
     });
 
 });
@@ -49,13 +53,6 @@ var startUI = function() {
             window.open(dataUrl, '_blank');
         });
 
-    controls.append("button")
-        .classed("load-picture", true)
-        .classed("icon-plus2", true)
-        .on("click", function() {
-            //painting = THREE.ImageUtils.loadTexture("image/girl.jpg");
-            //alert("Lol");
-        });
 
     controls.append("button")
         .classed("toggle-living-painting", true)
@@ -65,6 +62,10 @@ var startUI = function() {
                 renderingView = RenderingView.PAINTING;
             } else {
                 renderingView = RenderingView.LIVING;
+            }
+
+            if(play == false) {
+                UIStartRendering();
             }
         });
 
@@ -76,35 +77,43 @@ var startUI = function() {
         });
 
 
-     menu.append("input")
-     .attr("type", "file")
-     .attr("id", "file-name")
-     .on("change", function() {
-             var f = document.getElementById("file-name");
+    controls.append("button")
+        .classed("icon-upload", true)
+        .classed("input-file-button", true)
+        .append("input")
+        .attr("type", "file")
+        .attr("id", "file-name")
+        .on("change", function() {
+            var f = document.getElementById("file-name");
             //console.log(document.getElementById("file-name").files);
-             if (f.files && f.files[0]) {
-                 var reader = new FileReader();
+            if (f.files && f.files[0]) {
+                var reader = new FileReader();
 
-                 var image = document.createElement( 'img' );
-                 var texture = new THREE.Texture( image );
-                 reader.onload = function (e) {
-                     image.src = e.target.result;
-                     var texture = new THREE.Texture( image );
-                     /*
+                var image = document.createElement( 'img' );
+                var texture = new THREE.Texture( image );
+                reader.onload = function (e) {
+                    image.src = e.target.result;
+                    var texture = new THREE.Texture( image );
+                    /*
                      $('#preview')
-                         .attr('src', e.target.result)
-                         .width(150)
-                         .height(200);*/
-                     texture.needsUpdate = true;
-                     initLiving = texture;
-                     antUniforms.livingTexture.value = initLiving;
-                     livingUniforms.livingTexture.value = initLiving;
-                     skipLoadImage = true;
-                 };
+                     .attr('src', e.target.result)
+                     .width(150)
+                     .height(200);*/
+                    texture.needsUpdate = true;
+                    initLiving = texture;
+                    antUniforms.livingTexture.value = initLiving;
+                    livingUniforms.livingTexture.value = initLiving;
+                    skipLoadImage = true;
+                };
 
-                 reader.readAsDataURL(f.files[0]);
-             }
-     });
+                reader.readAsDataURL(f.files[0]);
+
+                if(play == false) {
+                    renderingView = RenderingView.LIVING;
+                    UIStartRendering();
+                }
+            }
+        });
 
     d3.json("data/presets.json", function(json) {
         var presets = d3.select(".presets");
@@ -125,6 +134,8 @@ var startUI = function() {
                 }
 
                 updateUIParam();
+                UIStopRendering();
+                UIStartRendering();
             });
     });
 
@@ -186,7 +197,7 @@ var UIStartRendering = function() {
     init();
 
     var button = d3.select(".toggle-rendering-button");
-    button.classed("icon-pause", true);
+    button.classed("icon-stop", true);
     button.classed("icon-play", false);
     if(play == false) {
         play = true;
@@ -197,6 +208,6 @@ var UIStartRendering = function() {
 var UIStopRendering = function() {
     play = false;
     var button = d3.select(".toggle-rendering-button");
-    button.classed("icon-pause", false);
+    button.classed("icon-stop", false);
     button.classed("icon-play", true);
 };

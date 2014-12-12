@@ -1,6 +1,6 @@
 [
     {
-        "name" : "Monster 1",
+        "name" : "Preset 1",
         "gain" :1,
         "decay" :0.9,
         "depositRate" : 1,
@@ -15,7 +15,7 @@
         "noiseMax" :3
     },
     {
-        "name" : "Monster 2",
+        "name" : "Preset 2",
         "gain" :0.8,
         "decay" :0.65,
         "depositRate" : 1,
@@ -30,52 +30,7 @@
         "noiseMax" :3
     },
     {
-        "name" : "Noise 1",
-        "gain" :0.3,
-        "decay" :0.9,
-        "depositRate" :1,
-        "depositTransp" :1,
-        "initialEnergy" :0.3,
-        "deathTreshold" :0.1,
-        "offspringTreshold" :0.999999,
-        "descVelMin" :-5,
-        "descVelMax" :5,
-        "vel" :0.001,
-        "noiseMin" :-3,
-        "noiseMax" :3
-    },
-    {
-        "name" : "Beauty 1",
-        "gain" :2,
-        "decay" :0.5,
-        "depositRate" :1,
-        "depositTransp" :0.2,
-        "initialEnergy" :2,
-        "deathTreshold" :0.5,
-        "offspringTreshold" :0.9999999,
-        "descVelMin" :-1.5,
-        "descVelMax" :1.5,
-        "vel" :0.0008,
-        "noiseMin" :-3,
-        "noiseMax" :3
-    },
-    {
-        "name" : "Artistic 1",
-        "gain" :2,
-        "decay" :0.5,
-        "depositRate" :1,
-        "depositTransp" :0.2,
-        "initialEnergy" :2,
-        "deathTreshold" :0.5,
-        "offspringTreshold" :0.999999,
-        "descVelMin" :-1.5,
-        "descVelMax" :1.5,
-        "vel" :0.0008,
-        "noiseMin" :-3,
-        "noiseMax" :3
-    },
-    {
-        "name" : "Artistic 2",
+        "name" : "Preset 3",
         "gain" :1.9,
         "decay" :0.5,
         "depositRate" :1,
@@ -90,7 +45,7 @@
         "noiseMax" :1.5
     },
     {
-        "name" : "Oil on canvas",
+        "name" : "Preset 4",
         "gain" :2,
         "decay" :0.5,
         "depositRate" :1,
@@ -105,7 +60,7 @@
         "noiseMax" :5
     },
     {
-        "name" : "Lines",
+        "name" : "Preset 5",
         "gain" :1,
         "decay" :0.5,
         "depositRate" :2,
@@ -120,7 +75,7 @@
         "noiseMax" :3
     },
     {
-        "name" : "Hyper watercolor",
+        "name" : "Preset 6",
         "gain" :100,
         "decay" :0.5,
         "depositRate" :2,
