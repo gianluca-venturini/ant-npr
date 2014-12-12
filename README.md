@@ -16,12 +16,12 @@ The button HIDE_SETTINGS is useful in order to hide the parameters menu and for 
 The button SAVE let the user save locally the final drawing.
 
 
-Buttons:
-    <img src="image/play.png"> PLAY button
-    <img src="image/image.png"> IMAGE button
-    <img src="image/upload.png"> UPLOAD button
-    <img src="image/hide.png"> HIDE_SETTINGS button
-    <img src="image/save.png"> SAVE button
+Buttons:<br>
+    <img src="image/play.png"> PLAY button<br>
+    <img src="image/image.png"> IMAGE button<br>
+    <img src="image/upload.png"> UPLOAD button<br>
+    <img src="image/hide.png"> HIDE_SETTINGS button<br>
+    <img src="image/save.png"> SAVE button<br>
 
 
 <iframe src="//player.vimeo.com/video/114323748" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <p><a href="http://vimeo.com/114323748">Colony Art</a> from <a href="http://vimeo.com/user12649074">Massimo</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
